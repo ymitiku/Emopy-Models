@@ -2,10 +2,10 @@
 import dlib 
 import cv2
 import numpy as np
-from constants import EMOTION_STATES
+from constants import EMOTION_STATES,EMOTIONS
 import os
 from constants import THRESH_HOLD
-
+from keras.models import model_from_json
 
 
 detector = dlib.get_frontal_face_detector()
@@ -96,15 +96,22 @@ def recognize(model,image):
         left  = max(faces[i].left()-20,0)
         right = min(faces[i].right(),image.shape[1]+20)
         face = image[top:bottom, left:right]
-        emotion = recognize_helper(model,face)
+        emotion,emotion_len = recognize_helper(model,face)
     
         if not emotion is None:
-            emotions.append(EMOTION_STATES[emotion])
+            if emotion_len == 2:
+                emotions.append(EMOTION_STATES[emotion])
+            else:
+                emotions.append(EMOTIONS[emotion])
         else:
             emotions.append("unkown")
         rectangles.append(dlib.rectangle(left,top,right,bottom))
     return emotions,rectangles
-
+def load_model(model_type):
+    with open(os.path.join("models",model_type+".json")) as model_file:
+        model = model_from_json(model_file.read())
+        model.load_weights(os.path.join("models",model_type+".h5"))
+    return model
 def arg_max(array):
     max_value = array[0]
     max_index = 0
@@ -126,14 +133,13 @@ def recognize_helper(model,face):
     face = face.astype('float32')
     face /= 255
     predictions = model.predict([face,dlibpoints,dists,angles])[0]
-    print predictions
     emotion = arg_max(predictions)
-    print predictions[emotion] > THRESH_HOLD
     if predictions[emotion]>THRESH_HOLD:
-        return emotion
+        return emotion,len(predictions)
     
 
-def image_demo(model,path):
+def image_demo(model_type,path):
+    model = load_model(model_type)
     img = cv2.imread(path)
     if img is None:
         raise Exception("Opencv failed to read image from given path.\n"+\
@@ -145,10 +151,12 @@ def image_demo(model,path):
     cv2.destroyAllWindows()
 
 def process_video(model, path):
+    print "Path",path
     cap = cv2.VideoCapture(path)
     cap.set(cv2.CAP_PROP_FRAME_WIDTH, 300)
     cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 240)
     ret,frame = cap.read()
+    
     while cap.isOpened():
         ret, frame = cap.read()
         frame = cv2.resize(frame,(300,240))
@@ -158,7 +166,9 @@ def process_video(model, path):
         if (cv2.waitKey(10) & 0xFF == ord('q')):
             break
     cv2.destroyAllWindows()
-def web_cam_demo(model):
+def web_cam_demo(model_type):
+    model = load_model(model_type)
     process_video(model,-1)
-def video_demo(model, path):
+def video_demo(model_type, path):
+    model = load_model(model_type)
     process_video(model,path)

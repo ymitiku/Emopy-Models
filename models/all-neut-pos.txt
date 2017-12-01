@@ -1,4 +1,0 @@
-Trained with all dataset
-inputs = image, dlib landmark points, dlib landmark angles and dlib landmark
-	distances
-accuracy training 83, test = 88
