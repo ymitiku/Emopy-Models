@@ -154,13 +154,40 @@ def angle_between(p1, p2):
     ang2 = np.arctan2(*p2[::-1])
     return (ang1 - ang2) % (2 * np.pi)
 def get_angles(dlib_points,centroid):
-    
+    """
+    Get clockwise angles between dlib landmarks of face and centroid of landmarks.
+
+    Parameters
+    ----------
+    dlib_points : numpy.ndarray
+        dlib landmarks of face.
+    centroid : numpy.ndarray
+        centroid of dlib landrmask.
+    Returns
+    -------
+    numpy.ndarray
+        dlib points clockwise angles in radiuns with respect to centroid vector
+    """
     output = np.zeros((68))
     for i in range(68):
         angle = angle_between(dlib_points[i],centroid)
         output[i] = angle
     return output
 def recognize(model,image):
+    """
+    Recognize emotion of each faces found in image. 
+
+    Parameters
+    ----------
+    model : keras.models.Model
+        model used to predict emotion.
+    image : numpy.ndarray
+        image which contains faces.
+    Returns
+    -------
+    str, dlib.rectangle
+        emotion and face rectangles.
+    """
     faces  = detector(image)
     emotions = []
     rectangles = []
@@ -182,11 +209,35 @@ def recognize(model,image):
         rectangles.append(dlib.rectangle(left,top,right,bottom))
     return emotions,rectangles
 def load_model(model_type):
+    """
+    Get model with specified 
+
+    Parameters
+    ----------
+    model_type : str
+       model type(either 'np' or 'ava')
+    Returns
+    -------
+    keras.models.Model
+        model for of type specified by model_type
+    """
     with open(os.path.join("models",model_type+".json")) as model_file:
         model = model_from_json(model_file.read())
         model.load_weights(os.path.join("models",model_type+".h5"))
     return model
 def arg_max(array):
+    """
+    Get index of maximum element of 1D array 
+
+    Parameters
+    ----------
+    array : list
+       
+    Returns
+    -------
+    int
+        index of maximum element of the array
+    """
     max_value = array[0]
     max_index = 0
     for i,el in enumerate(array):
@@ -195,6 +246,20 @@ def arg_max(array):
             max_index = i
     return max_index
 def recognize_helper(model,face):
+    """
+    Recognize emotion single face image. 
+
+    Parameters
+    ----------
+    model : keras.models.Model
+        model used to predict emotion.
+    image : numpy.ndarray
+        face image.
+    Returns
+    -------
+    str, int
+        emotion and length of outputs of model.
+    """
     face = sanitize(face)
     face = face.reshape(-1,48,48,1)
 
@@ -212,6 +277,16 @@ def recognize_helper(model,face):
     
 
 def image_demo(model_type,path):
+    """
+    demo to recognize emotions in still images. 
+
+    Parameters
+    ----------
+    model_type : str
+        model type(either 'np' or 'ava')
+    path : str
+        path to image.
+    """
     model = load_model(model_type)
     img = cv2.imread(path)
     if img is None:
@@ -224,6 +299,16 @@ def image_demo(model_type,path):
     cv2.destroyAllWindows()
 
 def process_video(model, path):
+    """
+    demo to recognize emotions in videos. 
+
+    Parameters
+    ----------
+    model : keras.models.Model
+        model used to predict emotions in video
+    path : str or int
+        path is either path to video or -1 for webcam.
+    """
     print "Path",path
     cap = cv2.VideoCapture(path)
     cap.set(cv2.CAP_PROP_FRAME_WIDTH, 300)
@@ -240,8 +325,26 @@ def process_video(model, path):
             break
     cv2.destroyAllWindows()
 def web_cam_demo(model_type):
+    """
+    demo to recognize emotions using webcam. 
+
+    Parameters
+    ----------
+    model_type : str
+        model type(either 'np' or 'ava')
+    """
     model = load_model(model_type)
     process_video(model,-1)
 def video_demo(model_type, path):
+    """
+    demo to recognize emotions in videos. 
+
+    Parameters
+    ----------
+    model_type : str
+        model type(either 'np' or 'ava')
+    path : str
+        path to video.
+    """
     model = load_model(model_type)
     process_video(model,path)
