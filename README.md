@@ -19,3 +19,11 @@ python -m demo --mtype np --ttype video --path /path-to-video/video-file
 python -m demo --mtype np --ttype webcam 
 ```
 
+### Dependancies
+
+* tensorflow > 1.0
+* keras
+* opencv > 3.0
+* dlib 
+* numpy
+
