@@ -58,14 +58,14 @@ def sanitize(image):
         numpy.ndarray
             gray scale image resized to IMG_SIZE
         """
-    if img is None:
+    if image is None:
         return None
-    assert len(img.shape) == 2 or len(img.shape) == 3,"Image dim should be either 2 or 3. It is "+str (len(img.shape))
+    assert len(image.shape) == 2 or len(image.shape) == 3,"Image dim should be either 2 or 3. It is "+str (len(image.shape))
 
-    if len(img.shape) ==3:
-        img = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
-    img = cv2.resize(img,IMG_SIZE)
-    return img
+    if len(image.shape) ==3:
+        image = cv2.cvtColor(image,cv2.COLOR_BGR2GRAY)
+    image = cv2.resize(image,IMG_SIZE)
+    return image
 
 def get_dlib_points(image,predictor):
     """
