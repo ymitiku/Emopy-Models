@@ -28,3 +28,9 @@ python -m demo --mtype np --ttype webcam
 * numpy
 
 opencv should be compiled with ffmpeg support.
+*** Conda virtual environment can be created using the following command***
+ 
+ ```
+ conda env create -f requirements.yml -n emopy_2
+ ```
+ This will create virtual env with name ```emopy```.
