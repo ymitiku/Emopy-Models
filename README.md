@@ -29,12 +29,14 @@ python -m demo --mtype np --ttype webcam
 
 * [shape_predictor_68_face_landmarks.dat][sp]
 
-opencv should be compiled with ffmpeg support.
-** Conda virtual environment can be created using the following command**
- 
+* **opencv should be compiled with ffmpeg support.**
+* **Conda virtual environment can be created using the following command.**
+
  ```
  conda env create -f requirements.yml -n emopy_2
  ```
+* **shape_predictor should be inside root directory of this project.**
+ 
  This will create virtual env with name ```emopy```.
 
  [sp]: http://dlib.net/files/shape_predictor_68_face_landmarks.dat.bz2
