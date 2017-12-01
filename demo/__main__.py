@@ -27,7 +27,7 @@ def main():
     if not args.ttype  in ["image","webcam",'video']:
         print "--mtype should be either image, webcam or video"
         return
-    if not os.path.exists(args.path):
+    if args.ttype in ["image","video"] and not os.path.exists(args.path):
         print "invalid path for --path"
         return
     if args.ttype == "image":
