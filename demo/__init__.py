@@ -134,8 +134,9 @@ def recognize_helper(model,face):
     face /= 255
     predictions = model.predict([face,dlibpoints,dists,angles])[0]
     emotion = arg_max(predictions)
-    if predictions[emotion]>THRESH_HOLD:
-        return emotion,len(predictions)
+    # if predictions[emotion]>THRESH_HOLD:
+    #     return emotion,len(predictions)
+    return emotion,len(predictions)
     
 
 def image_demo(model_type,path):
