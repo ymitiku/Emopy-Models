@@ -37,7 +37,7 @@ python -m demo --mtype np --ttype webcam
  ```
  conda env create -f requirements.yml -n emopy_2
  ```
-* **shape_predictor should be inside root directory of this project.**
+* **shape_predictor should be inside root directory of this project. Shape predictor can be downloaded to project using the following script.**
 ```
 cd /path-to-project
 wget "http://dlib.net/files/shape_predictor_68_face_landmarks.dat.bz2"
