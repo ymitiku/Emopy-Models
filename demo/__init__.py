@@ -10,7 +10,6 @@ from keras.models import model_from_json
 
 detector = dlib.get_frontal_face_detector()
 
-MODEL_TYPE = 'pos-neut'
 
 
 def get_dlib_shape_predictor():
@@ -23,21 +22,42 @@ IMG_SIZE = (48,48)
 
 
 def overlay(frame, rectangles, emotions, color=(48, 12, 160)):
+       
         """
         Draw rectangles and emotion text over image
 
-        :param Mat frame: Image
-        :param list rectangles: Coordinates of rectangles to draw
-        :param list emotions: List of emotions to write
-        :param tuple color: Box and text color
-        :return: Most dominant emotion of each face
-        :rtype: list
+        Parameters
+        ----------
+        frame       : numpy.ndarray
+            image on which rectangles  overlaid.
+        rectnagles  : list
+            face regions to overlay.
+        emotions    : list
+            emotions of each respective face
+        color       : tupple
+            color used to overlay rectangles and emotions text
+        Returns
+        -------
+        numpy.ndarray
+            image where rectangles and emotions are overlaid on it.
         """
         for i, rectangle in enumerate(rectangles):
             cv2.rectangle(frame, (rectangle.left(),rectangle.top()), (rectangle.right(),rectangle.bottom()), color)
             cv2.putText(frame, emotions[i], (rectangle.left() + 10, rectangle.top() + 10), cv2.FONT_HERSHEY_DUPLEX, 0.4,color)
         return frame
-def sanitize(img):
+def sanitize(image):
+    """
+        Converts image into gray scale if it RGB image and resize it to IMG_SIZE
+
+        Parameters
+        ----------
+        image : numpy.ndarray
+        
+        Returns
+        -------
+        numpy.ndarray
+            gray scale image resized to IMG_SIZE
+        """
     if img is None:
         return None
     assert len(img.shape) == 2 or len(img.shape) == 3,"Image dim should be either 2 or 3. It is "+str (len(img.shape))
@@ -48,6 +68,18 @@ def sanitize(img):
     return img
 
 def get_dlib_points(image,predictor):
+    """
+    Get dlib facial key points of face
+
+    Parameters
+    ----------
+    image : numpy.ndarray
+        face image.
+    Returns
+    -------
+    numpy.ndarray
+        68 facial key points
+    """
     face = dlib.rectangle(0,0,image.shape[1]-1,image.shape[0]-1)
     img = image.reshape(IMG_SIZE[0],IMG_SIZE[1])
     shapes = predictor(img,face)
@@ -58,6 +90,18 @@ def get_dlib_points(image,predictor):
     output = np.array(output).reshape((1,68,2))
     return output
 def to_dlib_points(images,predictor):
+    """
+    Get dlib facial key points of faces
+
+    Parameters
+    ----------
+    images : numpy.ndarray
+        faces image.
+    Returns
+    -------
+    numpy.ndarray
+        68 facial key points for each faces
+    """
     output = np.zeros((len(images),1,68,2))
     centroids = np.zeros((len(images),2))
     for i in range(len(images)):
@@ -68,6 +112,21 @@ def to_dlib_points(images,predictor):
     return output,centroids
         
 def get_distances_angles(all_dlib_points,centroids):
+    """
+    Get the distances for each dlib facial key points in face from centroid of the points and
+    angles between the dlib points vector and centroid vector.
+
+    Parameters
+    ----------
+    all_dlib_points : numpy.ndarray
+        dlib facial key points for each face.
+    centroid :
+        centroid of dlib facial key point for each face
+    Returns
+    -------
+    numpy.ndarray , numpy.ndarray
+        Dlib landmarks distances and angles with respect to respective centroid.
+    """
     all_distances = np.zeros((len(all_dlib_points),1,68,1))
     all_angles = np.zeros((len(all_dlib_points),1,68,1))
     for i in range(len(all_dlib_points)):
@@ -77,10 +136,25 @@ def get_distances_angles(all_dlib_points,centroids):
         all_angles[i][0] = angles.reshape(1,68,1)
     return all_distances,all_angles
 def angle_between(p1, p2):
+    """
+    Get clockwise angle between two vectors
+
+    Parameters
+    ----------
+    p1 : numpy.ndarray
+        first vector.
+    p2 : numpy.ndarray
+        second vector.
+    Returns
+    -------
+    float
+        angle in radiuns
+    """
     ang1 = np.arctan2(*p1[::-1])
     ang2 = np.arctan2(*p2[::-1])
     return (ang1 - ang2) % (2 * np.pi)
 def get_angles(dlib_points,centroid):
+    
     output = np.zeros((68))
     for i in range(68):
         angle = angle_between(dlib_points[i],centroid)
@@ -134,8 +208,6 @@ def recognize_helper(model,face):
     face /= 255
     predictions = model.predict([face,dlibpoints,dists,angles])[0]
     emotion = arg_max(predictions)
-    # if predictions[emotion]>THRESH_HOLD:
-    #     return emotion,len(predictions)
     return emotion,len(predictions)
     
 

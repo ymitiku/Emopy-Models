@@ -6,22 +6,20 @@ import os
 
 
 
-# with open("/home/mtk/iCog/projects/emopy/models/all-neut-pos.json") as model_file:
-#     model = model_from_json(model_file.read())
-#     model.load_weights("/home/mtk/iCog/projects/emopy/models/all-neut-pos.h5")
-#     # image_demo(model,"/home/mtk/iCog/projects/emopy/test-images/ang2.jpg")
-    # web_cam_demo(model)
-    # video_demo(model,"/home/mtk/iCog/projects/emopy/test-videos/1.mp4")
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--mtype", default="neutral-positive")
+    # --mtype is model type argument. it can be either 'np'(neutral vs positive emotion classifier) or 'ava'(All basic
+    # seven emotion classifier[anger,fear,disgust,happy,sad,surprise,neutral]). Default is 'np'
+    parser.add_argument("--mtype", default="np")
+
+    # --ttype is test type. It can be either 'image','video' or 'webcam'. default is 'webcam'
     parser.add_argument("--ttype",default="webcam", type=str)
-    parser.add_argument("--path",default=".", type=str)
+
+    # --path is path to either image or video. if --ttype is 'webcam' then --path argument will not be used.
+    parser.add_argument("--path",default="", type=str)
     args = parser.parse_args()
-    print args.mtype
-    print args.ttype
-    print args.path
+    
 
     if not args.mtype  in ["np",'ava']:
         print "--mtype should be either np or ava"
@@ -38,7 +36,6 @@ def main():
         video_demo(args.mtype,args.path) 
     else:
         web_cam_demo(args.mtype);
-    print args.ttype
         
 
 if __name__ == "__main__":
