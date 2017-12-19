@@ -22,7 +22,7 @@ python -m demo --mtype np --ttype webcam
 ### Dependancies
 
 * tensorflow >= 1.0
-* keras
+* keras >= 2.0
 * opencv >= 3.0
 * dlib 
 * numpy
