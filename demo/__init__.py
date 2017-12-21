@@ -5,6 +5,7 @@ import numpy as np
 from constants import EMOTION_STATES,EMOTIONS
 import os
 from constants import THRESH_HOLD
+from keras.models import load_model as ld_model
 from keras.models import model_from_json
 
 
@@ -24,9 +25,9 @@ IMG_SIZE = (48,48)
 def overlay(frame, rectangles, emotions, color=(48, 12, 160)):
        
         """
-        Draw rectangles and emotion text over image
+        draw rectangles and emotion text over image
 
-        Parameters
+        parameters
         ----------
         frame       : numpy.ndarray
             image on which rectangles  overlaid.
@@ -36,14 +37,14 @@ def overlay(frame, rectangles, emotions, color=(48, 12, 160)):
             emotions of each respective face
         color       : tupple
             color used to overlay rectangles and emotions text
-        Returns
+        returns
         -------
         numpy.ndarray
             image where rectangles and emotions are overlaid on it.
         """
         for i, rectangle in enumerate(rectangles):
             cv2.rectangle(frame, (rectangle.left(),rectangle.top()), (rectangle.right(),rectangle.bottom()), color)
-            cv2.putText(frame, emotions[i], (rectangle.left() + 10, rectangle.top() + 10), cv2.FONT_HERSHEY_DUPLEX, 0.4,color)
+            cv2.putText(frame, emotions[i], (rectangle.left() + 10, rectangle.top() + 10), cv2.FONT_HERSHEY_SIMPLEX, 0.4,color)
         return frame
 def sanitize(image):
     """

@@ -7,6 +7,7 @@ import os
 
 
 
+
 def main():
     parser = argparse.ArgumentParser()
     # --mtype is model type argument. it can be either 'np'(neutral vs positive emotion classifier) or 'ava'(All basic
@@ -21,8 +22,8 @@ def main():
     args = parser.parse_args()
     
 
-    if not args.mtype  in ["np",'ava']:
-        print "--mtype should be either np or ava"
+    if not args.mtype  in ["np",'ava',"ava2"]:
+        print "--mtype should be one np , ava or ava2"
         return
     if not args.ttype  in ["image","webcam",'video']:
         print "--mtype should be either image, webcam or video"
