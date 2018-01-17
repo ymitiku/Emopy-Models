@@ -18,11 +18,14 @@ def main():
 
     # --path is path to either image or video. if --ttype is 'webcam' then --path argument will not be used.
     parser.add_argument("--path",default="", type=str)
+
+    # --frame_width is frame width video or should be resized. 
+    parser.add_argument("--frame_width",default=600, type=int)
     args = parser.parse_args()
     
 
-    if not args.mtype  in ["np",'ava']:
-        print "--mtype should be either np or ava"
+    if not args.mtype  in ["np",'ava',"ava-ii"]:
+        print "--mtype should be either np,ava or ava-ii"
         return
     if not args.ttype  in ["image","webcam",'video']:
         print "--mtype should be either image, webcam or video"
@@ -33,9 +36,9 @@ def main():
     if args.ttype == "image":
         image_demo(args.mtype,args.path)
     elif args.ttype == "video":
-        video_demo(args.mtype,args.path) 
+        video_demo(args.mtype,args.path,args.frame_width) 
     else:
-        web_cam_demo(args.mtype);
+        web_cam_demo(args.mtype,args.frame_width);
         
 
 if __name__ == "__main__":

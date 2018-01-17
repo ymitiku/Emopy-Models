@@ -173,7 +173,7 @@ def get_angles(dlib_points,centroid):
         angle = angle_between(dlib_points[i],centroid)
         output[i] = angle
     return output
-def recognize(model,image):
+def recognize(model,image,model_type):
     """
     Recognize emotion of each faces found in image. 
 
@@ -197,7 +197,7 @@ def recognize(model,image):
         left  = max(faces[i].left()-20,0)
         right = min(faces[i].right(),image.shape[1]+20)
         face = image[top:bottom, left:right]
-        emotion,emotion_len = recognize_helper(model,face)
+        emotion,emotion_len = recognize_helper(model,face,model_type)
     
         if not emotion is None:
             if emotion_len == 2:
@@ -245,7 +245,7 @@ def arg_max(array):
             max_value=el
             max_index = i
     return max_index
-def recognize_helper(model,face):
+def recognize_helper(model,face,model_type):
     """
     Recognize emotion single face image. 
 
@@ -262,16 +262,18 @@ def recognize_helper(model,face):
     """
     face = sanitize(face)
     face = face.reshape(-1,48,48,1)
-
-    dlibpoints,centroids = to_dlib_points(face,predictor)
-    dists,angles = get_distances_angles(dlibpoints,centroids)
-    dlibpoints = dlibpoints.astype(float)/50;
-    dists = dists.astype(float)/50;
-    angles = angles.astype(float)/50;
-    face = face.reshape(face.shape[0], 48, 48, 1)
-    face = face.astype('float32')
-    face /= 255
-    predictions = model.predict([face,dlibpoints,dists,angles])[0]
+    if model_type!="ava-ii":
+        dlibpoints,centroids = to_dlib_points(face,predictor)
+        dists,angles = get_distances_angles(dlibpoints,centroids)
+        dlibpoints = dlibpoints.astype(float)/50;
+        dists = dists.astype(float)/50;
+        angles = angles.astype(float)/50;
+        face = face.reshape(face.shape[0], 48, 48, 1)
+        face = face.astype('float32')
+        face /= 255
+        predictions = model.predict([face,dlibpoints,dists,angles])[0]
+    else:
+        predictions = model.predict(face)[0]
     emotion = arg_max(predictions)
     return emotion,len(predictions)
     
@@ -292,13 +294,13 @@ def image_demo(model_type,path):
     if img is None:
         raise Exception("Opencv failed to read image from given path.\n"+\
                     "check path '"+path+"' exists and valid image file.")
-    emotions,rectangles = recognize(model,img)
+    emotions,rectangles = recognize(model,img,model_type)
     overlay(img,rectangles,emotions)
     cv2.imshow("Image",img)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
 
-def process_video(model, path):
+def process_video(model, path,model_type,frame_width = 600):
     """
     demo to recognize emotions in videos. 
 
@@ -311,20 +313,20 @@ def process_video(model, path):
     """
     print "Path",path
     cap = cv2.VideoCapture(path)
-    cap.set(cv2.CAP_PROP_FRAME_WIDTH, 300)
-    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 240)
-    ret,frame = cap.read()
-    
     while cap.isOpened():
         ret, frame = cap.read()
-        frame = cv2.resize(frame,(300,240))
-        emotions,rectangles = recognize(model,frame)
+        FRAME_WIDTH = frame.shape[1]
+        ratio = FRAME_WIDTH/float(frame_width)
+        height = frame.shape[0]/float(ratio)
+        frame = cv2.resize(frame,(frame_width,int(height)))
+        
+        emotions,rectangles = recognize(model,frame,model_type)
         overlay(frame,rectangles,emotions)
         cv2.imshow("Image",frame)
         if (cv2.waitKey(10) & 0xFF == ord('q')):
             break
     cv2.destroyAllWindows()
-def web_cam_demo(model_type):
+def web_cam_demo(model_type,frame_width=600):
     """
     demo to recognize emotions using webcam. 
 
@@ -334,8 +336,8 @@ def web_cam_demo(model_type):
         model type(either 'np' or 'ava')
     """
     model = load_model(model_type)
-    process_video(model,-1)
-def video_demo(model_type, path):
+    process_video(model,-1,model_type,frame_width)
+def video_demo(model_type, path,frame_width=600):
     """
     demo to recognize emotions in videos. 
 
@@ -347,4 +349,4 @@ def video_demo(model_type, path):
         path to video.
     """
     model = load_model(model_type)
-    process_video(model,path)
+    process_video(model,path,model_type,frame_width)
