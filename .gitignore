@@ -1,0 +1,5 @@
+shape_predictor_68_face_landmarks.dat
+*.pyc
+logs/*
+*.h5
+*.json
