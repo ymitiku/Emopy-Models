@@ -5,6 +5,7 @@ import numpy as np
 import dlib
 from keras.preprocessing.image import ImageDataGenerator
 from skimage import feature
+from scipy.ndimage.interpolation import rotate
 
 # Dlib shape predictor to detect 68 face landmarks
 
@@ -66,8 +67,8 @@ def get_dlib_points(image):
     for i in range(68):
         output[i] = [shapes.part(i).x,shapes.part(i).y]
     return output
-def load_images_features(files_dir, image_files,labels,image_shape,augmentation=True):
-    """[summary]
+def load_images_features(files_dir, image_files,labels,image_shape,augmentation=True,align=True):
+    """loads face images and extracts features(landmark features) from face images.
     
     Arguments:
         files_dir {str} -- emotions folder directory
@@ -104,6 +105,12 @@ def load_images_features(files_dir, image_files,labels,image_shape,augmentation=
             img = datagenerator.random_transform(img)
             img = np.squeeze(img)
         dpts = get_dlib_points(img)
+        # if align:
+        #     roll_angle = compute_roll_angle(dpts)
+        #     rotated = rotate(img,roll_angle,reshape=False)
+
+        # dpts = get_dlib_points(rotated)
+
         centroid = np.array([dpts.mean(axis=0)])
         dsts = distance_between(dpts,centroid)
         
@@ -112,7 +119,9 @@ def load_images_features(files_dir, image_files,labels,image_shape,augmentation=
         angles = angles_between(dpts,centroid)
         dsts = dsts.reshape(68,1)
         angles = angles.reshape(68,1)
+        # img = rotated.reshape(image_shape[0],image_shape[1],1)
         img = img.reshape(image_shape[0],image_shape[1],1)
+
         output[index] = img
         dlib_points[index] = dpts
         dlib_points_distances[index] = dsts
@@ -123,7 +132,54 @@ def load_images_features(files_dir, image_files,labels,image_shape,augmentation=
     dlib_points_angles = np.expand_dims(dlib_points_angles,1)
 
     return output,dlib_points,dlib_points_distances,dlib_points_angles,labels
+
+def load_face_images(files_dir, image_files,labels,image_shape,augmentation=True,align=True):
+    """loads face images
     
+    Arguments:
+        files_dir {str} -- emotions folder directory
+        image_files {list | np.ndarray} -- array containing image file names
+        labels {list | np.ndarray} -- emotion label for each image files
+        image_shape {tuple | list} -- shape of output image files
+    
+    Keyword Arguments:
+        augmentation {bool} -- if set true generates augmented images (default: {True})
+    
+    Returns:
+        tuple -- images, dlib points, dlib points distances and angles from respective centroid, labels of each images
+    """
+
+    assert len(image_shape)==3,"Image shape should be length 3"
+    output = np.zeros((len(image_files),image_shape[0],image_shape[1],image_shape[2]))
+   
+
+    
+    
+    for index in range(len(image_files)):   
+        img = cv2.imread(os.path.join(files_dir,EMOTIONS[labels[index]],image_files[index]))
+        if not(image_shape[0]==img.shape[0] and image_shape[1]==img.shape[1]):
+            img = cv2.resize(img,(image_shape[0],image_shape[1]))
+        if image_shape[2]==1:
+            img = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
+        img = img.astype(np.uint8)
+
+        if augmentation:
+            img = np.expand_dims(img,2)
+
+            img = datagenerator.random_transform(img)
+            img = np.squeeze(img)
+        
+        dpts = get_dlib_points(img)
+        # if align:
+        #     roll_angle = compute_roll_angle(dpts)
+        #     rotated = rotate(img,roll_angle,reshape=False)
+
+        # img = rotated.reshape(image_shape[0],image_shape[1],1)
+        img = img.reshape(image_shape[0],image_shape[1],1)
+
+        output[index] = img
+       
+    return output,labels
 def distance_between(v1,v2):
     """Calculates euclidean distance between two vectors. 
     If one of the arguments is matrix then the output is calculated for each row
@@ -178,8 +234,29 @@ def generate_indexes(length,randomize=True):
     if randomize:
         np.random.shuffle(indexes)
     return indexes
+def compute_roll_angle(dlib_points):
+    """Calculates face roll angle from dlib_points. 
+    This method uses method specified here(http://www.scitepress.org/Papers/2015/53083/53083.pdf)
+    to calculate roll angle.
+    Arguments:
+        files_dir {str} -- emotions folder directory
+    
+    Returns:
+        float -- angle in degrees
 
-def generator(dataset_dir,train_files,train_labels,batch_size = 100):
+    """
+    left_eye_center = dlib_points[42:48].mean(axis=0)
+    right_eye_center = dlib_points[36:42].mean(axis=0)
+
+    dx = left_eye_center[0] - right_eye_center[0]
+    dy = left_eye_center[1] - right_eye_center[1]
+
+    radians = np.arctan(dy/dx)
+    return np.degrees(radians)
+    
+
+
+def generator_face_features(dataset_dir,train_files,train_labels,batch_size = 100):
     if type(train_files) == list:
         train_files = np.array(train_files)
     if type(train_labels) == list:
@@ -203,6 +280,59 @@ def generator(dataset_dir,train_files,train_labels,batch_size = 100):
             dlib_points_angles = dlib_points_angles.astype(np.float32)/np.pi
 
             x = [images,dlib_points,dlib_points_distances,dlib_points_angles]
+            y = np.eye(7)[labels]
+
+            yield x,y
+
+def generator_dlib_features(dataset_dir,train_files,train_labels,batch_size = 100):
+    if type(train_files) == list:
+        train_files = np.array(train_files)
+    if type(train_labels) == list:
+        train_labels = np.array(train_labels)
+
+    dataset_folder = os.path.join(dataset_dir,"train")
+    while(True):
+        indexes = generate_indexes(len(train_files))
+        for i in range(len(train_files)//batch_size):
+            current_indexes = indexes[i*batch_size:(i+1)*batch_size]
+
+            current_files = train_files[current_indexes]
+            current_labels = train_labels[current_indexes]
+            
+            _,dlib_points,dlib_points_distances,dlib_points_angles,labels = load_images_features(dataset_folder,current_files,current_labels,(48,48,1))
+
+            
+            dlib_points = dlib_points.astype(np.float32)/48
+            dlib_points_distances = dlib_points_distances.astype(np.float32)/48
+            dlib_points_angles = dlib_points_angles.astype(np.float32)/np.pi
+
+            x = [dlib_points,dlib_points_distances,dlib_points_angles]
+            y = np.eye(7)[labels]
+
+            yield x,y
+
+def generator_face_images(dataset_dir,train_files,train_labels,batch_size = 100):
+    if type(train_files) == list:
+        train_files = np.array(train_files)
+    if type(train_labels) == list:
+        train_labels = np.array(train_labels)
+
+    dataset_folder = os.path.join(dataset_dir,"train")
+    while(True):
+        indexes = generate_indexes(len(train_files))
+        for i in range(len(train_files)//batch_size):
+            current_indexes = indexes[i*batch_size:(i+1)*batch_size]
+
+            current_files = train_files[current_indexes]
+            current_labels = train_labels[current_indexes]
+            
+            images,labels = load_face_images(dataset_folder,current_files,current_labels,(48,48,1))
+
+            images = images.astype(np.float32)/255
+            
+           
+
+            x = images
             y = np.eye(7)[labels]
 
             yield x,y
