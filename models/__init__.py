@@ -2,12 +2,19 @@ from keras.layers import Conv2D,MaxPool2D,Input,Dropout,Flatten,concatenate,Dens
 from keras import backend as K
 from keras.models import Model,model_from_json
 
-def DlibAnglesLayer(dlib_points):
-    pass
-def DlibDistancesLayer(dlib_points):
-    pass
 
 def getImageInputModel(image_shape,num_class):
+    """Creates keras model with input shape of image_shape 
+    and output shape of num_class
+    
+    Arguments:
+        image_shape {list| tuple} -- image shape for the model input
+        num_class {int} -- number of classes for classification
+    
+    Returns:
+        keras.model.Model -- image input model
+    """
+
     image_input = Input(shape=image_shape)
 
     image_layer = Conv2D(32,[3,3],strides=[1,1],padding="same",activation="relu")(image_input)
@@ -29,6 +36,15 @@ def getImageInputModel(image_shape,num_class):
     model = Model(inputs=image_input,outputs=output)
     return model
 def getDlibFeaturesInputModel(num_class):
+    """Creates keras model with input dlib points, dlib points distances from from centroid
+       and dlib points angles from centroid and  output shape of num_class
+    
+    Arguments:
+        num_class {int} -- number of classes for classification
+    
+    Returns:
+        keras.model.Model -- image input model
+    """
     dlib_points_input = Input(shape=(1,68,2))
     dlib_points_layer = Conv2D(32,[1,3],strides=(1,1),padding="same",activation="relu")(dlib_points_input)
     dlib_points_layer = Conv2D(32,[1,3],strides=(1,1),padding="same",activation="relu")(dlib_points_layer)
@@ -67,7 +83,7 @@ def getDlibFeaturesInputModel(num_class):
     model = Model(inputs=[dlib_points_input,dlib_points_distances_input,dlib_points_angles_input],outputs=output)
     return model
 def getMultiInputEmopyModel(image_input_model,face_features_model,image_shape,num_class):
-    """Gets model which will have three inputs(image, dlib key points,
+    """Gets model which will have four inputs(image, dlib key points,
     dlib key points distances and dlib key points angles from centroid.
     ) layers.
     
