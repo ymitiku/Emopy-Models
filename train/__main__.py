@@ -4,6 +4,8 @@ import cv2
 from skimage import feature
 import numpy as np
 import dlib
+import tensorflow as tf 
+import keras 
 
 def get_cmd_args():
     """ Parse user command line arguments"""
@@ -15,6 +17,7 @@ def get_cmd_args():
     parser.add_argument("-l","--lr",default=1e-4,type=float)
     parser.add_argument("-i","--input_shape",type=int,default=[48,48,1])
     parser.add_argument("-m","--model_output",type=str,default="model")
+    parser.add_argument("-f","--features",type=str,default="all")
 
 
     args = parser.parse_args()
@@ -23,6 +26,8 @@ def get_cmd_args():
 def main():
     """Start of training program.
     """
+    np.random.seed(1)
+    tf.set_random_seed(2)
     args = get_cmd_args()
     start_training(args)
    
