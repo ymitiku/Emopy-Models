@@ -4,6 +4,14 @@ from dataset import load_dataset_files,load_images_features,generator_face_featu
 import os
 import numpy as np
 np.seterr(divide='ignore', invalid='ignore')
+from keras.models import model_from_json
+
+def load_model(json_path,weights_path):
+    with open(json_path) as json_file:
+        model = model_from_json(json_file.read())
+        model.load_weights(weights_path)
+        return model
+
 def start_training(args):
     """Builds and trains a emopy model
     
@@ -15,8 +23,14 @@ def start_training(args):
     elif args.features == "dlib":
         model = getDlibFeaturesInputModel(7)
     else:
-        image_model = getImageInputModel(args.input_shape,7)
-        dlib_model = getDlibFeaturesInputModel(7)
+        image_model = load_model("logs/models/model-im.json","logs/models/model-im.h5")
+        for i in range(len(image_model.layers)):
+            image_model.layers[i].name += "-image"
+        
+        dlib_model = load_model("logs/models/model-dp.json","logs/models/model-dp.h5")
+        for i in range(len(dlib_model.layers)):
+            dlib_model.layers[i].name += "-dlib"
+
         model = getMultiInputEmopyModel(image_model,dlib_model,args.input_shape,7)
         
     model.compile(loss=keras.losses.categorical_crossentropy,optimizer=keras.optimizers.Adam(args.lr),metrics=["accuracy"])
@@ -27,14 +41,14 @@ def train_image_input_model(model,args):
     
     train,test = load_dataset_files(args.dataset_dir)
     test_dataset_folder = os.path.join(args.dataset_dir,"test")
-    test_images,test_labels = load_face_images(test_dataset_folder,test[0],test[1],(48,48,1))
+    test_images,test_labels = load_face_images(test_dataset_folder,test[0],test[1],args.input_shape)
 
     test_images = test_images.astype(np.float32)/255
     
     x_test = test_images
     y_test = np.eye(7)[test_labels]
 
-    model.fit_generator(generator_face_images(args.dataset_dir,train[0],train[1],args.batch),epochs=args.epoch,steps_per_epoch = args.step,verbose=1,validation_data=[x_test,y_test])
+    model.fit_generator(generator_face_images(args.dataset_dir,train[0],train[1],args),epochs=args.epoch,steps_per_epoch = args.step,verbose=1,validation_data=[x_test,y_test])
     model.save_weights("logs/models/model-im.h5")
     score = model.evaluate(x_test, y_test)
     model_json = model.to_json()
@@ -46,17 +60,17 @@ def train_image_input_model(model,args):
 def train_dlib_features_input_model(model,args):
     train,test = load_dataset_files(args.dataset_dir)
     test_dataset_folder = os.path.join(args.dataset_dir,"test")
-    _,test_dlib_points,test_dlib_points_distances,test_dlib_points_angles,test_labels = load_images_features(test_dataset_folder,test[0],test[1],(48,48,1))
+    _,test_dlib_points,test_dlib_points_distances,test_dlib_points_angles,test_labels = load_images_features(test_dataset_folder,test[0],test[1],args.input_shape)
 
-    
-    test_dlib_points = test_dlib_points.astype(np.float32)/48
-    test_dlib_points_distances = test_dlib_points_distances.astype(np.float32)/48
+    IMAGE_HEIGHT = args.input_shape[0]
+    test_dlib_points = test_dlib_points.astype(np.float32)/IMAGE_HEIGHT
+    test_dlib_points_distances = test_dlib_points_distances.astype(np.float32)/IMAGE_HEIGHT
     test_dlib_points_angles = test_dlib_points_angles.astype(np.float32)/np.pi
 
     x_test = [test_dlib_points,test_dlib_points_distances,test_dlib_points_angles]
     y_test = np.eye(7)[test_labels]
 
-    model.fit_generator(generator_dlib_features(args.dataset_dir,train[0],train[1],args.batch),epochs=args.epoch,steps_per_epoch = args.step,verbose=1,validation_data=[x_test,y_test])
+    model.fit_generator(generator_dlib_features(args.dataset_dir,train[0],train[1],args),epochs=args.epoch,steps_per_epoch = args.step,verbose=1,validation_data=[x_test,y_test])
     model.save_weights("logs/models/model-dp.h5")
 
     model_json = model.to_json()
@@ -68,18 +82,18 @@ def train_dlib_features_input_model(model,args):
 def train_face_features_input_model(model,args):
     train,test = load_dataset_files(args.dataset_dir)
     test_dataset_folder = os.path.join(args.dataset_dir,"test")
-    test_images,test_dlib_points,test_dlib_points_distances,test_dlib_points_angles,test_labels = load_images_features(test_dataset_folder,test[0],test[1],(48,48,1))
+    test_images,test_dlib_points,test_dlib_points_distances,test_dlib_points_angles,test_labels = load_images_features(test_dataset_folder,test[0],test[1],args.input_shape)
 
     test_images = test_images.astype(np.float32)/255
-    
-    test_dlib_points = test_dlib_points.astype(np.float32)/48
-    test_dlib_points_distances = test_dlib_points_distances.astype(np.float32)/48
+    IMAGE_HEIGHT = args.input_shape[0]
+    test_dlib_points = test_dlib_points.astype(np.float32)/IMAGE_HEIGHT
+    test_dlib_points_distances = test_dlib_points_distances.astype(np.float32)/IMAGE_HEIGHT
     test_dlib_points_angles = test_dlib_points_angles.astype(np.float32)/np.pi
 
     x_test = [test_images,test_dlib_points,test_dlib_points_distances,test_dlib_points_angles]
     y_test = np.eye(7)[test_labels]
 
-    model.fit_generator(generator_face_features(args.dataset_dir,train[0],train[1],args.batch),epochs=args.epoch,steps_per_epoch = args.step,verbose=1,validation_data=[x_test,y_test])
+    model.fit_generator(generator_face_features(args.dataset_dir,train[0],train[1],args),epochs=args.epoch,steps_per_epoch = args.step,verbose=1,validation_data=[x_test,y_test])
     model.save_weights("logs/models/model-ff.h5")
 
     model_json = model.to_json()
