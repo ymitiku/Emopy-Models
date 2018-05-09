@@ -1,14 +1,14 @@
 # Emotion recognition from face features
 This project is aimed to train model that detects emotion from face image.
 
-## How to preprocess kaggle fer dataset
-This proejct uses[CK+ dataset](http://www.consortium.ri.cmu.edu/ckagree/) and [Kaggle fer2013 dataset](https://www.kaggle.com/c/challenges-in-representation-learning-facial-expression-recognition-challenge/data).  
+## How to preprocess datasets
+This proejct uses [CK+ dataset](http://www.consortium.ri.cmu.edu/ckagree/) and  [Kaggle fer2013 dataset](https://www.kaggle.com/c/challenges-in-representation-learning-facial-expression-recognition-challenge/data).  
 The dataset should be saved inside single directory which contains ```train``` and ```test``` folders.
 * To extract kaggle's dataset follow the instruction to download the dataset [here](https://www.kaggle.com/c/challenges-in-representation-learning-facial-expression-recognition-challenge/data) 
   * Extract the dataset 
-  * In side this projects directory run the following code on terminal
+  * Inside this projects directory run the following code on terminal
 ```python -m preprocess_fer -d /path-to-fer2013.csv-extracted ```
-* To process the ck+ datset go to [this repository](https://github.com/mitiku1/Ck-dataset-preprocess)
+* To process the ck+ dataset go to [this repository](https://github.com/mitiku1/Ck-dataset-preprocess)
 * After preprocessing both dataset merge the two datasets mannually
 
 
@@ -40,6 +40,12 @@ Option to train program are
 #### Step 3 - Training the main model
 ``` python -m train [options] ```
 
-
+### Running Demo program
+``` python -m demo [options]```
+Options for demo program are
+* -j : model json file
+* -w : model weights
+* -i : Face image source. This could be either `image`, `video` or `webcam`. Defualt is webcam.
+* -p : Path to source file. If options -i is webcam this is not necessary.
 
  [sp]: http://dlib.net/files/shape_predictor_68_face_landmarks.dat.bz2
