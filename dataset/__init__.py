@@ -4,7 +4,6 @@ import cv2
 import numpy as np
 import dlib
 from keras.preprocessing.image import ImageDataGenerator
-from skimage import feature
 from scipy.ndimage.interpolation import rotate
 
 # Dlib shape predictor to detect 68 face landmarks
