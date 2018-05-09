@@ -76,7 +76,7 @@ def getDlibFeaturesInputModel(num_class):
 
     output = Dense(128,activation="relu")(merged)
     output = Dropout(0.2)(output)
-    output = Dense(252,activation="relu")(output)
+    output = Dense(1024,activation="relu")(output)
     output = Dropout(0.2)(output)
     output = Dense(num_class,activation="softmax")(output)
 
@@ -97,7 +97,7 @@ def getMultiInputEmopyModel(image_input_model,face_features_model,image_shape,nu
 
     image_model_last_layer = image_input_model.layers[9].output
     features_last_layer = face_features_model.layers[21].output
-    merged = concatenate([image_model_last_layer,features_last_layer])
+    merged = concatenate([image_model_last_layer,features_last_layer],name="concat_all")
 
 
     output = Dense(128,activation="relu")(merged)

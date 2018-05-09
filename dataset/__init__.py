@@ -67,7 +67,7 @@ def get_dlib_points(image):
     for i in range(68):
         output[i] = [shapes.part(i).x,shapes.part(i).y]
     return output
-def load_images_features(files_dir, image_files,labels,image_shape,augmentation=True,align=True):
+def load_images_features(files_dir, image_files,labels,image_shape,augmentation=True):
     """loads face images and extracts features(landmark features) from face images.
     
     Arguments:
@@ -105,21 +105,15 @@ def load_images_features(files_dir, image_files,labels,image_shape,augmentation=
             img = datagenerator.random_transform(img)
             img = np.squeeze(img)
         dpts = get_dlib_points(img)
-        # if align:
-        #     roll_angle = compute_roll_angle(dpts)
-        #     rotated = rotate(img,roll_angle,reshape=False)
-
-        # dpts = get_dlib_points(rotated)
+       
 
         centroid = np.array([dpts.mean(axis=0)])
         dsts = distance_between(dpts,centroid)
-        
-        
-
         angles = angles_between(dpts,centroid)
+
+        
         dsts = dsts.reshape(68,1)
         angles = angles.reshape(68,1)
-        # img = rotated.reshape(image_shape[0],image_shape[1],1)
         img = img.reshape(image_shape[0],image_shape[1],1)
 
         output[index] = img
@@ -133,7 +127,7 @@ def load_images_features(files_dir, image_files,labels,image_shape,augmentation=
 
     return output,dlib_points,dlib_points_distances,dlib_points_angles,labels
 
-def load_face_images(files_dir, image_files,labels,image_shape,augmentation=True,align=True):
+def load_face_images(files_dir, image_files,labels,image_shape,augmentation=True):
     """loads face images
     
     Arguments:
@@ -170,11 +164,7 @@ def load_face_images(files_dir, image_files,labels,image_shape,augmentation=True
             img = np.squeeze(img)
         
         dpts = get_dlib_points(img)
-        # if align:
-        #     roll_angle = compute_roll_angle(dpts)
-        #     rotated = rotate(img,roll_angle,reshape=False)
-
-        # img = rotated.reshape(image_shape[0],image_shape[1],1)
+     
         img = img.reshape(image_shape[0],image_shape[1],1)
 
         output[index] = img
@@ -256,7 +246,7 @@ def compute_roll_angle(dlib_points):
     
 
 
-def generator_face_features(dataset_dir,train_files,train_labels,batch_size = 100):
+def generator_face_features(dataset_dir,train_files,train_labels,args):
     if type(train_files) == list:
         train_files = np.array(train_files)
     if type(train_labels) == list:
@@ -265,18 +255,18 @@ def generator_face_features(dataset_dir,train_files,train_labels,batch_size = 10
     dataset_folder = os.path.join(dataset_dir,"train")
     while(True):
         indexes = generate_indexes(len(train_files))
-        for i in range(len(train_files)//batch_size):
-            current_indexes = indexes[i*batch_size:(i+1)*batch_size]
+        for i in range(len(train_files)//args.batch):
+            current_indexes = indexes[i*args.batch:(i+1)*args.batch]
 
             current_files = train_files[current_indexes]
             current_labels = train_labels[current_indexes]
             
-            images,dlib_points,dlib_points_distances,dlib_points_angles,labels = load_images_features(dataset_folder,current_files,current_labels,(48,48,1))
+            images,dlib_points,dlib_points_distances,dlib_points_angles,labels = load_images_features(dataset_folder,current_files,current_labels,args.input_shape)
 
             images = images.astype(np.float32)/255
-            
-            dlib_points = dlib_points.astype(np.float32)/48
-            dlib_points_distances = dlib_points_distances.astype(np.float32)/48
+            IMAGE_HEIGHT = args.input_shape[0]
+            dlib_points = dlib_points.astype(np.float32)/IMAGE_HEIGHT
+            dlib_points_distances = dlib_points_distances.astype(np.float32)/IMAGE_HEIGHT
             dlib_points_angles = dlib_points_angles.astype(np.float32)/np.pi
 
             x = [images,dlib_points,dlib_points_distances,dlib_points_angles]
@@ -284,7 +274,7 @@ def generator_face_features(dataset_dir,train_files,train_labels,batch_size = 10
 
             yield x,y
 
-def generator_dlib_features(dataset_dir,train_files,train_labels,batch_size = 100):
+def generator_dlib_features(dataset_dir,train_files,train_labels,args):
     if type(train_files) == list:
         train_files = np.array(train_files)
     if type(train_labels) == list:
@@ -293,25 +283,25 @@ def generator_dlib_features(dataset_dir,train_files,train_labels,batch_size = 10
     dataset_folder = os.path.join(dataset_dir,"train")
     while(True):
         indexes = generate_indexes(len(train_files))
-        for i in range(len(train_files)//batch_size):
-            current_indexes = indexes[i*batch_size:(i+1)*batch_size]
+        for i in range(len(train_files)//args.batch):
+            current_indexes = indexes[i*args.batch:(i+1)*args.batch]
 
             current_files = train_files[current_indexes]
             current_labels = train_labels[current_indexes]
             
-            _,dlib_points,dlib_points_distances,dlib_points_angles,labels = load_images_features(dataset_folder,current_files,current_labels,(48,48,1))
+            _,dlib_points,dlib_points_distances,dlib_points_angles,labels = load_images_features(dataset_folder,current_files,current_labels,args.input_shape)
 
-            
-            dlib_points = dlib_points.astype(np.float32)/48
-            dlib_points_distances = dlib_points_distances.astype(np.float32)/48
+            IMAGE_HEIGHT = args.input_shape[0]
+            dlib_points = dlib_points.astype(np.float32)/IMAGE_HEIGHT
+            dlib_points_distances = dlib_points_distances.astype(np.float32)/IMAGE_HEIGHT
             dlib_points_angles = dlib_points_angles.astype(np.float32)/np.pi
 
             x = [dlib_points,dlib_points_distances,dlib_points_angles]
             y = np.eye(7)[labels]
 
             yield x,y
+def generator_face_images(dataset_dir,train_files,train_labels,args):
 
-def generator_face_images(dataset_dir,train_files,train_labels,batch_size = 100):
     if type(train_files) == list:
         train_files = np.array(train_files)
     if type(train_labels) == list:
@@ -320,13 +310,13 @@ def generator_face_images(dataset_dir,train_files,train_labels,batch_size = 100)
     dataset_folder = os.path.join(dataset_dir,"train")
     while(True):
         indexes = generate_indexes(len(train_files))
-        for i in range(len(train_files)//batch_size):
-            current_indexes = indexes[i*batch_size:(i+1)*batch_size]
+        for i in range(len(train_files)//args.batch):
+            current_indexes = indexes[i*args.batch:(i+1)*args.batch]
 
             current_files = train_files[current_indexes]
             current_labels = train_labels[current_indexes]
             
-            images,labels = load_face_images(dataset_folder,current_files,current_labels,(48,48,1))
+            images,labels = load_face_images(dataset_folder,current_files,current_labels,args.input_shape)
 
             images = images.astype(np.float32)/255
             
