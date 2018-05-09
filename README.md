@@ -22,7 +22,8 @@ wget "http://dlib.net/files/shape_predictor_68_face_landmarks.dat.bz2"
 bzip2 -d shape_predictor_68_face_landmarks.dat.bz2
 ```
 Training program be run using the following command
-```python -m train [options]```
+```python -m train [options]
+```
 Option to train program are
   * -d : Dataset directory path that contains train and test folders
   * -e : Number of epochs to train the model
@@ -34,14 +35,22 @@ Option to train program are
 
 
 #### Step 1 - Training image input model
-``` python -m train [options] -f image ```
+``` 
+python -m train [options] -f image 
+```
 #### Step 3 - Training dlib features input model
-``` python -m train [options] -f dlib ```
+``` 
+python -m train [options] -f dlib 
+```
 #### Step 3 - Training the main model
-``` python -m train [options] ```
+``` 
+python -m train [options] 
+```
 
 ### Running Demo program
-``` python -m demo [options]```
+``` 
+python -m demo [options]
+```  
 Options for demo program are
 * -j : model json file
 * -w : model weights
