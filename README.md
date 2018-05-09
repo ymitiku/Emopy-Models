@@ -7,7 +7,9 @@ The dataset should be saved inside single directory which contains ```train``` a
 * To extract kaggle's dataset follow the instruction to download the dataset [here](https://www.kaggle.com/c/challenges-in-representation-learning-facial-expression-recognition-challenge/data) 
   * Extract the dataset 
   * Inside this projects directory run the following code on terminal
-```python -m preprocess_fer -d /path-to-fer2013.csv-extracted ```
+```
+python -m preprocess_fer -d /path-to-fer2013.csv-extracted 
+```
 * To process the ck+ dataset go to [this repository](https://github.com/mitiku1/Ck-dataset-preprocess)
 * After preprocessing both dataset merge the two datasets mannually
 
@@ -21,8 +23,9 @@ cd /path-to-project
 wget "http://dlib.net/files/shape_predictor_68_face_landmarks.dat.bz2"
 bzip2 -d shape_predictor_68_face_landmarks.dat.bz2
 ```
-Training program be run using the following command
-```python -m train [options]
+Training program can be run using the following command
+```
+python -m train [options]
 ```
 Option to train program are
   * -d : Dataset directory path that contains train and test folders
