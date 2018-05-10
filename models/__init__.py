@@ -97,6 +97,11 @@ def getMultiInputEmopyModel(image_input_model,face_features_model,image_shape,nu
 
     image_model_last_layer = image_input_model.layers[9].output
     features_last_layer = face_features_model.layers[21].output
+    for i in range(len(image_input_model.layers)):
+        image_input_model.layers[i].trainable=False
+    for i in range(len(face_features_model.layers)):
+        face_features_model.layers[i].trainable=False
+
     merged = concatenate([image_model_last_layer,features_last_layer],name="concat_all")
 
 

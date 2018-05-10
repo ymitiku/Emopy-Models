@@ -3,9 +3,10 @@ import cv2
 import dlib
 import numpy as np
 from utils import EMOTIONS
-
+from dataset import get_dlib_points,distance_between,angles_between
 predictor = dlib.shape_predictor("shape_predictor_68_face_landmarks.dat")
 detector = dlib.get_frontal_face_detector()
+
 def load_model_from_args(args):
     with open(args.json) as json_file:
         model = model_from_json(json_file.read())
@@ -52,10 +53,19 @@ def get_emotion_str(predictions):
     max_index,confidence = get_max_index(predictions)
     return EMOTIONS[max_index],confidence
 
-def get_emotion(face_image,model):
-    predictions = model.predict(face_image.reshape(face_image))
+
+def get_emotion(features,model):
+    predictions = model.predict(features)
     emotion,confidence = get_emotion_str(predictions[0])
     return emotion
+def get_dlib_features(image):
+    dpts = get_dlib_points(image)
+    centroid = np.array([dpts.mean(axis=0)])
+    dsts = distance_between(dpts,centroid)
+    angles = angles_between(dpts,centroid)
+    dsts = dsts.reshape(68,1)
+    angles = angles.reshape(68,1)
+    return dpts,dsts,angles
 
 def start_image_demo(args,model):
     image_shape = model.inputs[0].shape.as_list()[1:]
@@ -73,7 +83,22 @@ def start_image_demo(args,model):
         ]
         
         face_imag = cv2.resize(face_imag,(image_shape[0],image_shape[1]))
-        e,_ = get_emotion(face_imag,model)
+        dpts,dists,angles = get_dlib_features(face_imag)
+        
+        face_imag = face_imag.reshape(-1,image_shape[0],image_shape[1],image_shape[2])
+        dists = dists.reshape(68,1)
+        angles = angles.reshape(68,1)
+        img = img.reshape(image_shape[0],image_shape[1],1)
+
+        IMAGE_HEIGHT = image_shape[0]
+
+        face_imag = face_imag.astype(np.float32)/255
+       
+        dpts = dpts.astype(np.float32)/IMAGE_HEIGHT
+        dists = dists.astype(np.float32)/IMAGE_HEIGHT
+        angles = angles.astype(np.float32)/np.pi
+
+        e,_ = get_emotion([face_imag,dpts,dists,angles],model)
         emotions+=[e]
         face_rects+=[face]
     overlay(img,face_rects,emotions)
@@ -99,7 +124,23 @@ def process_video(cap,model):
             ]
             
             face_imag = cv2.resize(face_imag,(image_shape[0],image_shape[1]))
-            e,_ = get_emotion(face_imag,model)
+
+            dpts,dists,angles = get_dlib_features(face_imag)
+            
+            face_imag = face_imag.reshape(-1,image_shape[0],image_shape[1],image_shape[2])
+            dists = dists.reshape(68,1)
+            angles = angles.reshape(68,1)
+            img = img.reshape(image_shape[0],image_shape[1],1)
+
+            IMAGE_HEIGHT = image_shape[0]
+
+            face_imag = face_imag.astype(np.float32)/255
+        
+            dpts = dpts.astype(np.float32)/IMAGE_HEIGHT
+            dists = dists.astype(np.float32)/IMAGE_HEIGHT
+            angles = angles.astype(np.float32)/np.pi
+
+            e,_ = get_emotion([face_imag,dpts,dists,angles],model)
             emotions+=[e]
             face_rects+=[face]
         overlay(frame,face_rects,emotions)
