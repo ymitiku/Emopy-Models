@@ -12,6 +12,12 @@ def load_model(json_path,weights_path):
         model.load_weights(weights_path)
         return model
 
+class CustomCallBack(keras.callbacks.Callback):
+    def __init__(self,model_name):
+        self.model_name = model_name
+    def on_epoch_end(self,epoch,logs={}):
+        self.model.save_weights("logs/models/last_weights-"+self.model_name+".h5")
+
 def start_training(args):
     """Builds and trains a emopy model
     
@@ -48,7 +54,7 @@ def train_image_input_model(model,args):
     x_test = test_images
     y_test = np.eye(7)[test_labels]
 
-    model.fit_generator(generator_face_images(args.dataset_dir,train[0],train[1],args),epochs=args.epoch,steps_per_epoch = args.step,verbose=1,validation_data=[x_test,y_test])
+    model.fit_generator(generator_face_images(args.dataset_dir,train[0],train[1],args),callbacks=[CustomCallBack("image")],epochs=args.epoch,steps_per_epoch = args.step,verbose=1,validation_data=[x_test,y_test])
     model.save_weights("logs/models/model-im.h5")
     score = model.evaluate(x_test, y_test)
     model_json = model.to_json()
@@ -70,7 +76,7 @@ def train_dlib_features_input_model(model,args):
     x_test = [test_dlib_points,test_dlib_points_distances,test_dlib_points_angles]
     y_test = np.eye(7)[test_labels]
 
-    model.fit_generator(generator_dlib_features(args.dataset_dir,train[0],train[1],args),epochs=args.epoch,steps_per_epoch = args.step,verbose=1,validation_data=[x_test,y_test])
+    model.fit_generator(generator_dlib_features(args.dataset_dir,train[0],train[1],args),callbacks=[CustomCallBack("dlib")],epochs=args.epoch,steps_per_epoch = args.step,verbose=1,validation_data=[x_test,y_test])
     model.save_weights("logs/models/model-dp.h5")
 
     model_json = model.to_json()
@@ -93,7 +99,7 @@ def train_face_features_input_model(model,args):
     x_test = [test_images,test_dlib_points,test_dlib_points_distances,test_dlib_points_angles]
     y_test = np.eye(7)[test_labels]
 
-    model.fit_generator(generator_face_features(args.dataset_dir,train[0],train[1],args),epochs=args.epoch,steps_per_epoch = args.step,verbose=1,validation_data=[x_test,y_test])
+    model.fit_generator(generator_face_features(args.dataset_dir,train[0],train[1],args),callbacks=[CustomCallBack("all")],epochs=args.epoch,steps_per_epoch = args.step,verbose=1,validation_data=[x_test,y_test])
     model.save_weights("logs/models/model-ff.h5")
 
     model_json = model.to_json()
@@ -105,10 +111,22 @@ def train_face_features_input_model(model,args):
 
 def train_model(model,args):
     if args.features == "image":
+        if os.path.exists("logs/models/last_weights-image.h5"):
+            print "loading saved model"
+            model.load_weights("logs/models/last_weights-image.h5")
+       
         train_image_input_model(model,args)
     elif args.features == "dlib":
+        if os.path.exists("logs/models/last_weights-dlib.h5"):
+            print "loading saved model"
+            model.load_weights("logs/models/last_weights-dlib.h5")
+      
         train_dlib_features_input_model(model,args)
     else:
+        if os.path.exists("logs/models/last_weights-all.h5"):
+            print "loading saved model"
+            model.load_weights("logs/models/last_weights-all.h5")
+       
         train_face_features_input_model(model,args)
     
     

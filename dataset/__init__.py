@@ -14,10 +14,9 @@ predictor = dlib.shape_predictor("shape_predictor_68_face_landmarks.dat")
 # datagenerator for generating augmented images
 datagenerator = ImageDataGenerator(
                 rotation_range = 20,
-                width_shift_range = 0.2,
-                height_shift_range = 0.2,
-                shear_range = 0.2,
-                zoom_range = 0.2,
+                width_shift_range = 0.1,
+                height_shift_range = 0.1,
+                zoom_range = 0.1,
                 horizontal_flip=True,
                 data_format="channels_last"
                  
