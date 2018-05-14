@@ -35,9 +35,9 @@ def overlay(frame, rectangles, text, color=(48, 12, 160)):
 
 def start_demo(args):
     model = load_model_from_args(args)
-    if args.type=="image":
+    if args.input=="image":
         start_image_demo(args,model)
-    elif args.type=="video":
+    elif args.input=="video":
         start_video_demo(args,model)
     else:
         start_webcam_demo(args,model)
@@ -57,7 +57,7 @@ def get_emotion_str(predictions):
 def get_emotion(features,model):
     predictions = model.predict(features)
     emotion,confidence = get_emotion_str(predictions[0])
-    return emotion
+    return emotion,confidence
 def get_dlib_features(image):
     dpts = get_dlib_points(image)
     centroid = np.array([dpts.mean(axis=0)])
@@ -88,7 +88,7 @@ def start_image_demo(args,model):
         face_imag = face_imag.reshape(-1,image_shape[0],image_shape[1],image_shape[2])
         dists = dists.reshape(68,1)
         angles = angles.reshape(68,1)
-        img = img.reshape(image_shape[0],image_shape[1],1)
+        face_imag = face_imag.reshape(1,image_shape[0],image_shape[1],1)
 
         IMAGE_HEIGHT = image_shape[0]
 
@@ -98,10 +98,24 @@ def start_image_demo(args,model):
         dists = dists.astype(np.float32)/IMAGE_HEIGHT
         angles = angles.astype(np.float32)/np.pi
 
+        dpts = dpts.reshape(-1,1,68,2)
+        dists = dists.reshape(-1,1,68,1)
+        angles = angles.reshape(-1,1,68,1)
+
         e,_ = get_emotion([face_imag,dpts,dists,angles],model)
         emotions+=[e]
         face_rects+=[face]
     overlay(img,face_rects,emotions)
+
+    if img.shape[0]>720:
+        o_height = img.shape[0]
+        o_width = img.shape[1]
+
+        ratio = o_width/float(o_height)
+        new_height = 720
+        new_width = int(new_height * ratio)
+
+        img = cv2.resize(img,(new_width,new_height))
     cv2.imshow("Image Demo",img)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
@@ -128,9 +142,12 @@ def process_video(cap,model):
             dpts,dists,angles = get_dlib_features(face_imag)
             
             face_imag = face_imag.reshape(-1,image_shape[0],image_shape[1],image_shape[2])
-            dists = dists.reshape(68,1)
-            angles = angles.reshape(68,1)
-            img = img.reshape(image_shape[0],image_shape[1],1)
+            
+            face_imag = face_imag.reshape(1,image_shape[0],image_shape[1],1)
+
+            dpts = dpts.reshape(-1,1,68,2)
+            dists = dists.reshape(-1,1,68,1)
+            angles = angles.reshape(-1,1,68,1)
 
             IMAGE_HEIGHT = image_shape[0]
 
