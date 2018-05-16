@@ -3,3 +3,6 @@ shape_predictor_68_face_landmarks.dat
 logs/*
 *.h5
 *.json
+!logs/logs/.gitkeep
+!logs/models/.gitkeep
+!logs/.gitkeep
