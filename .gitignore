@@ -1,6 +1,7 @@
 shape_predictor_68_face_landmarks.dat
 *.pyc
-logs/*
+logs/logs/*
+logs/models/*
 *.h5
 *.json
 !logs/logs/.gitkeep
