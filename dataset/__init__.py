@@ -212,7 +212,9 @@ def angles_between(v1,v2):
     v2_norm = np.linalg.norm(v2,axis=1)
     
     with np.errstate(divide='ignore', invalid='ignore'):
-        cosine_of_angle = np.divide(dot_prod,(v1_norm * v2_norm)).reshape(68,1)
+        norm_prod = v1_norm*v2_norm
+        norm_prod += np.finfo(np.float32).eps
+        cosine_of_angle = np.divide(dot_prod,(norm_prod)).reshape(68,1)
 
     angles = np.arccos(np.clip(cosine_of_angle,-1,1))
 
@@ -293,7 +295,8 @@ def generator_dlib_features(dataset_dir,train_files,train_labels,args):
             dlib_points = dlib_points.astype(np.float32)/IMAGE_HEIGHT
             dlib_points_distances = dlib_points_distances.astype(np.float32)/IMAGE_HEIGHT
             dlib_points_angles = dlib_points_angles.astype(np.float32)/np.pi
-
+           
+            
             x = [dlib_points,dlib_points_distances,dlib_points_angles]
             y = np.eye(7)[labels]
 
