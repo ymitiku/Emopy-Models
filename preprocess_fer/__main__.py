@@ -1,3 +1,4 @@
+from __future__ import print_function
 from sklearn.model_selection import train_test_split
 import argparse
 import os
@@ -66,7 +67,7 @@ def preprocess_fer2013(args):
   
             
             if (index+1) %1000 ==0:
-                print "processed ",(index+1),"images"
+                print ("processed ",(index+1),"images")
         
 
 def main():
