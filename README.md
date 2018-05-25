@@ -65,7 +65,7 @@ Options for demo program are
 * tensorflow >= 1.5
 * dlib
 * opencv >= 3.1
-* sklearn
+* scikit-image
 * numpy 
 * pandas
 

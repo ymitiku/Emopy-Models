@@ -1,3 +1,4 @@
+from __future__ import print_function
 from models import getMultiInputEmopyModel,getImageInputModel,getDlibFeaturesInputModel
 import keras
 from dataset import load_dataset_files,load_images_features,generator_face_features,generator_face_images,generator_dlib_features,load_face_images
@@ -112,19 +113,19 @@ def train_face_features_input_model(model,args):
 def train_model(model,args):
     if args.features == "image":
         if os.path.exists("logs/models/last_weights-image.h5"):
-            print "loading saved model"
+            print ("loading saved model")
             model.load_weights("logs/models/last_weights-image.h5")
        
         train_image_input_model(model,args)
     elif args.features == "dlib":
         if os.path.exists("logs/models/last_weights-dlib.h5"):
-            print "loading saved model"
+            print ("loading saved model")
             model.load_weights("logs/models/last_weights-dlib.h5")
       
         train_dlib_features_input_model(model,args)
     else:
         if os.path.exists("logs/models/last_weights-all.h5"):
-            print "loading saved model"
+            print ("loading saved model")
             model.load_weights("logs/models/last_weights-all.h5")
        
         train_face_features_input_model(model,args)
