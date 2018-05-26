@@ -11,6 +11,7 @@ def load_model_from_args(args):
     with open(args.json) as json_file:
         model = model_from_json(json_file.read())
         model.load_weights(args.weights)
+        display = args.gui
         return model
 
 
@@ -36,7 +37,7 @@ def overlay(frame, rectangles, text, color=(48, 12, 160)):
 def start_demo(args):
     model = load_model_from_args(args)
     if args.input=="image":
-        start_image_demo(args,model)
+        return start_image_demo(args,model)
     elif args.input=="video":
         start_video_demo(args,model)
     else:
@@ -69,7 +70,10 @@ def get_dlib_features(image):
 
 def start_image_demo(args,model):
     image_shape = model.inputs[0].shape.as_list()[1:]
-    img = cv2.imread(args.path)
+    if args.snet == True:
+        img = args.image
+    else:
+        img = cv2.imread(args.path)
     gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
     faces = detector(gray)
     face_arrays = np.zeros((len(faces),image_shape[0],image_shape[1],image_shape[2]))
@@ -105,7 +109,10 @@ def start_image_demo(args,model):
         e,_ = get_emotion([face_imag,dpts,dists,angles],model)
         emotions+=[e]
         face_rects+=[face]
-    overlay(img,face_rects,emotions)
+    if args.gui == True:
+        overlay(img,face_rects,emotions)
+    else:
+        print(face_rects,emotions)
 
     if img.shape[0]>720:
         o_height = img.shape[0]
@@ -116,11 +123,13 @@ def start_image_demo(args,model):
         new_width = int(new_height * ratio)
 
         img = cv2.resize(img,(new_width,new_height))
-    cv2.imshow("Image Demo",img)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
+    if args.gui == True:
+        cv2.imshow("Image Demo",img)
+        cv2.waitKey(0)
+        cv2.destroyAllWindows()
+    return face_rects, emotions
 
-def process_video(cap,model):
+def process_video(cap,model,args):
     image_shape = model.inputs[0].shape.as_list()[1:]
     while cap.isOpened():
         _,frame = cap.read()
@@ -160,10 +169,13 @@ def process_video(cap,model):
             e,_ = get_emotion([face_imag,dpts,dists,angles],model)
             emotions+=[e]
             face_rects+=[face]
-        overlay(frame,face_rects,emotions)
-        cv2.imshow("Video Demo",frame)
-        if cv2.waitKey(1) & 0xFF == ord('q'):
-            break
+        if args.gui == True:
+            overlay(frame,face_rects,emotions)
+            cv2.imshow("Video Demo",frame)
+            if cv2.waitKey(1) & 0xFF == ord('q'):
+                break
+        else:
+            print(face_rects, emotions)
     cap.release()
     cv2.destroyAllWindows()
 
@@ -172,4 +184,4 @@ def start_video_demo(args,model):
     process_video(cap,model)
 def start_webcam_demo(args,model):
     cap = cv2.VideoCapture(-1)
-    process_video(cap,model)
+    process_video(cap,model,args)

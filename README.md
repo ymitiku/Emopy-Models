@@ -68,7 +68,15 @@ Options for demo program are
 * scikit-image
 * numpy 
 * pandas
+### Using as singularitynet service
+Trained models are available to be run as services to provide emotional results for image currently. It's based on the (alpha-service-example)[https://github.com/singnet/alpha-service-example]. And thus most of the parts are similar. 
+```
+python singnet_wrap/run-snet-service
 
+# to test
+cd singnet_wrap
+python test.py
+```
 # LICENSE
 MIT License
 
