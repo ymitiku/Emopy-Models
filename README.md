@@ -77,6 +77,10 @@ python singnet_wrap/run-snet-service
 cd singnet_wrap
 python test.py
 ```
+####TODO
+* Better data responses to queries. As it stands we just serialize the data as string. But it's better to utilize grpcs to have consistent message format to communicate with other services or just for single user. 
+* Daemon has yet to be tested on kovan testnet. That needs to proceed.
+
 # LICENSE
 MIT License
 
