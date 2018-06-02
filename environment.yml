@@ -1,0 +1,26 @@
+name: emotion-recogntion-snet-agent
+dependencies:
+    - Keras==2.1.5
+    - numpy==1.14.3
+    - protobuf==3.5.2
+    - ptyprocess==0.5.2
+    - Pygments==2.2.0
+    - pyparsing==2.2.0
+    - python-dateutil==2.7.3
+    - pytz==2018.4
+    - PyWavelets==0.5.2
+    - PyYAML==3.12
+    - scikit-image==0.13.1
+    - scipy==1.1.0
+    - simplegeneric==0.8.1
+    - six==1.11.0
+    - tensorboard==1.8.0
+    - tensorflow==1.8.0
+    - tqdm
+    - pip:
+        - snetd-alpha==0.1.0
+        - jsonrpcserver==3.5.4
+        - jsonrpcclient==2.5.2
+        - aiohttp==3.2.1 
+        - opencv-python==3.4.1.15
+        - dlib

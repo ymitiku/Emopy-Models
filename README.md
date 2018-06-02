@@ -1,6 +1,20 @@
 # Emotion recognition from face features
 This project is aimed to train model that detects emotion from face image.
-
+## Install prerequisites
+### Using conda
+```
+# with conda
+conda env update
+python get_models.py
+# to activate environment
+source activate emotion-recogntion-snet-agent
+```
+### Using pip
+```
+# to utilize pip
+pip install -r requirements.txt
+python get_models.py
+```
 ## How to preprocess datasets
 This proejct uses [CK+ dataset](http://www.consortium.ri.cmu.edu/ckagree/) and  [Kaggle fer2013 dataset](https://www.kaggle.com/c/challenges-in-representation-learning-facial-expression-recognition-challenge/data).  
 The dataset should be saved inside single directory which contains ```train``` and ```test``` folders.
@@ -22,6 +36,9 @@ The four inputs model can be trained by three steps
 cd /path-to-project
 wget "http://dlib.net/files/shape_predictor_68_face_landmarks.dat.bz2"
 bzip2 -d shape_predictor_68_face_landmarks.dat.bz2
+
+# or
+python get_models.py
 ```
 Training program can be run using the following command
 ```
@@ -77,7 +94,7 @@ python singnet_wrap/run-snet-service
 cd singnet_wrap
 python test.py
 ```
-####TODO
+#### TODO
 * Better data responses to queries. As it stands we just serialize the data as string. But it's better to utilize grpcs to have consistent message format to communicate with other services or just for single user. 
 * Daemon has yet to be tested on kovan testnet. That needs to proceed.
 
