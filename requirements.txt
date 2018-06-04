@@ -13,7 +13,7 @@ html5lib==0.9999999
 ipython==6.4.0
 ipython-genutils==0.2.0
 jedi==0.12.0
-Keras==2.1.5
+Keras==2.1.6
 kiwisolver==1.0.1
 Mako==1.0.7
 Markdown==2.6.11

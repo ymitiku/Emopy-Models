@@ -1,14 +1,15 @@
 name: emotion-recogntion-snet-agent
 dependencies:
-    - Keras==2.1.5
+    - Keras==2.1.6
     - numpy==1.14.3
     - protobuf==3.5.2
     - ptyprocess==0.5.2
     - Pygments==2.2.0
     - pyparsing==2.2.0
+    - python==3.6.5
     - python-dateutil==2.7.3
-    - pytz==2018.4
     - PyWavelets==0.5.2
+    - pytz==2018.4
     - PyYAML==3.12
     - scikit-image==0.13.1
     - scipy==1.1.0

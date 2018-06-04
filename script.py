@@ -1,4 +1,6 @@
 import base64
+import random
+import os
 import numpy as np
 from aiohttp import web
 from jsonrpcserver.aio import methods
@@ -10,9 +12,10 @@ In this function, we would call the fucntion with args set as values
 '''
 class Args:
     def __init__(self):
-        self.json = 'logs/models/model-ff.json'
-        self.weights = 'logs/models/model-ff.h5'
+        self.json = 'models/models/model-ff.json'
+        self.weights = 'models/models/model-ff.h5'
         self.model_input = 'image'
+        # TODO currenty we save, so this should be set this False for now
         self.snet = False
         self.gui = False
         self.path = ''
@@ -37,7 +40,11 @@ async def classify(**kwargs):
         raise InvalidParams("image type is required")
     binary_image = base64.b64decode(image)
     # this requires that we save the file. 
-    with open('tmp.'+str(image_type), 'wb') as f:
+    current_files = os.listdir('tmp')
+    tmp_file_name = 'tmp/tmp_' + str(random.randint(0,100000000000)) +'_.' + str(image_type)
+    while tmp_file_name in current_files:
+        tmp_file_name = 'tmp/tmp_' + str(random.randint(0,100000000000)) +'_.' + str(image_type)
+    with open(tmp_file_name,'wb') as f:
         f.write(binary_image)
     model.args.path = 'tmp.'+str(image_type)
     bounding_boxes, emotions = model.predict()
@@ -53,4 +60,9 @@ async def handle(request):
 
 if __name__ == '__main__':
     app.router.add_post('/', handle)
+    # create a tmp folder if it doesn't exist to hold files
+    try: 
+        os.mkdir('tmp')
+    except OSError:
+        print('tmp folder already exists, not created')
     web.run_app(app, host="127.0.0.1", port=8000)
