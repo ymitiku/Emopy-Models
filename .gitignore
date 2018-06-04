@@ -8,3 +8,4 @@ tmp/*
 !logs/logs/.gitkeep
 !logs/models/.gitkeep
 !logs/.gitkeep
+snet.config
