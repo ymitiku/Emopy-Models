@@ -56,4 +56,4 @@ jsonrpcserver==3.5.4
 jsonrpcclient==2.5.2
 aiohttp==3.2.1 
 opencv-python==3.4.1.15
-dlib
+dlib==19.13.1
