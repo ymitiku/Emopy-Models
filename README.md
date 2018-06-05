@@ -88,16 +88,19 @@ Options for demo program are
 ### Using as singularitynet service
 Trained models are available to be run as services to provide emotional results for image currently. It's based on the (alpha-service-example)[https://github.com/singnet/alpha-service-example]. And thus most of the parts are similar. 
 ```
-python singnet_wrap/run-snet-service
+cp snet.config.example snet.config 
+# add private key on snet.config
+  `"PRIVATE_KEY": "#PRIVATEKEY GOES HERE"`
+python run-snet-service.py --daemon-config-path snet.config
 
 # to test
-cd singnet_wrap
-python test.py
+python test_rpc_call.py
 ```
+### Accessing on Daap
+Go to http://alpha.singularitynet.io/ to create a job
 #### TODO
 * Better data responses to queries. As it stands we just serialize the data as string. But it's better to utilize grpcs to have consistent message format to communicate with other services or just for single user. 
-* Daemon has yet to be tested on kovan testnet. That needs to proceed.
-
+* Persistant hosting to make it work always
 # LICENSE
 MIT License
 

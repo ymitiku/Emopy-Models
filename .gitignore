@@ -9,3 +9,4 @@ tmp/*
 !logs/models/.gitkeep
 !logs/.gitkeep
 snet.config
+snetd*

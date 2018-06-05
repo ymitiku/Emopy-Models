@@ -37,7 +37,7 @@ def start_snetd(cwd, daemon_config_path=None):
     cmd = ["snetd"]
     if daemon_config_path is not None:
         cmd.extend(["--config-path", daemon_config_path])
-    return subprocess.Popen(cmd, cwd=cwd)
+    return subprocess.Popen(cmd)
 
 
 def start_service(cwd):
